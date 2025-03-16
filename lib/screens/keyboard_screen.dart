@@ -15,7 +15,7 @@ class KeyboardScreenState extends State<KeyboardScreen> {
   final FocusNode _focusNode = FocusNode();
   List<Map<String, dynamic>> _errors = [];
   int _errorCount = 0;
-  bool _isUpperCase = true; // Ajout d'un état pour gérer les majuscules
+  bool _isUpperCase = true;
   Timer? _debounce;
 
   @override
@@ -28,9 +28,9 @@ class KeyboardScreenState extends State<KeyboardScreen> {
 
   void _checkErrors() async {
     String text = _controller.text.trim();
-    
+
     if (text.split(" ").length < 3) return;
-    
+
     List<Map<String, dynamic>> errors = await GrammarService.checkErrors(text);
     setState(() {
       _errors = errors;
@@ -43,16 +43,20 @@ class KeyboardScreenState extends State<KeyboardScreen> {
       if (key == "SPACE") {
         _controller.text += " ";
       } else if (key == "BACK" && _controller.text.isNotEmpty) {
-        _controller.text = _controller.text.substring(0, _controller.text.length - 1);
+        _controller.text = _controller.text.substring(
+          0,
+          _controller.text.length - 1,
+        );
       } else if (key == "BACK" && _controller.text.isEmpty) {
         return; // Empêche l'affichage de "BACK" si le champ est vide
       } else if (key == "SHIFT") {
         _isUpperCase = !_isUpperCase;
       } else {
-        _controller.text += _isUpperCase ? key.toUpperCase() : key.toLowerCase();
+        _controller.text +=
+            _isUpperCase ? key.toUpperCase() : key.toLowerCase();
       }
     });
-    
+
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 800), () {
       _checkErrors();
@@ -79,7 +83,10 @@ class KeyboardScreenState extends State<KeyboardScreen> {
                       decoration: InputDecoration(
                         labelText: "Tape ici",
                         border: OutlineInputBorder(),
-                        errorText: _errors.isNotEmpty ? "⚠ ${_errors.length} fautes détectées" : null,
+                        errorText:
+                            _errors.isNotEmpty
+                                ? "⚠ ${_errors.length} fautes détectées"
+                                : null,
                       ),
                       style: const TextStyle(color: Colors.black),
                     ),
@@ -89,12 +96,8 @@ class KeyboardScreenState extends State<KeyboardScreen> {
                     onSubmit: () {},
                     errorCount: _errorCount,
                     onKeyTap: _onKeyTap,
-                    isUpperCase: _isUpperCase, // Ajouté pour gérer les majuscules
-                    onShiftTap: () {
-                      setState(() {
-                        _isUpperCase = !_isUpperCase;
-                      });
-                    }, // Ajouté pour basculer entre majuscule et minuscule
+                    isUpperCase: _isUpperCase,
+                    onShiftTap: () => _onKeyTap("SHIFT"),
                   ),
                 ],
               ),
